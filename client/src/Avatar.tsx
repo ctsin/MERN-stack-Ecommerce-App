@@ -2,64 +2,71 @@ import axios from "axios";
 import { isNil } from "lodash";
 import { ChangeEventHandler, useState } from "react";
 
-export const Avatar = () => {
-  const [product, setProduct] = useState<any>(null);
-  const [img, setImg] = useState<File | null>(null);
+const convertToBase64 = (file: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      resolve(reader.result as string);
+    };
 
-  const onChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-    console.log(event.target.files);
+    reader.onerror = (error: any) => {
+      reject(error);
+    };
+  });
+};
+
+export const Avatar = () => {
+  const [response, setResponse] = useState<Record<
+    "name" | "avatar",
+    string
+  > | null>(null);
+  const [avatar, setAvatar] = useState<string | null>(null);
+
+  const onChange: ChangeEventHandler<HTMLInputElement> = async (event) => {
     if (isNil(event.target.files)) return;
 
-    setImg(event.target.files[0]);
+    const base64 = await convertToBase64(event.target.files[0]);
+    setAvatar(base64);
   };
 
   const onUpload = () => {
-    if (isNil(img)) return;
-
-    const formData = new FormData();
-    formData.append("name", `Foo ${Date.now()}`);
-    formData.append("photo", img);
+    if (isNil(avatar)) return;
 
     axios
-      .post(`/api/v1/product/create-product`, formData)
-      .then(({ data }) => {
-        console.log("🚀 ~ .then ~ data:", data);
-        setProduct(data.product);
+      .post(`/api/v1/profile/create`, {
+        name: `Foo ${Date.now()}`,
+        avatar,
       })
-      .catch((err) => {
-        console.log(err);
+      .then(({ data }) => {
+        setResponse(data.product);
+      })
+      .catch((error) => {
+        console.log(error);
       });
   };
 
   return (
-    <div style={{ margin: "22px 0" }}>
-      <label htmlFor="file">Upload</label>
+    <>
+      <h4>Profile</h4>
       <input
+        style={{ margin: "22px 0", display: "block" }}
         type="file"
         name="file"
         id="file"
         accept="image/*"
+        placeholder="Upload avatar"
         onChange={onChange}
-        hidden
       />
-      {img && (
-        <img
-          style={{ display: "block", maxHeight: "100px" }}
-          src={URL.createObjectURL(img)}
-          alt=""
-        />
-      )}
+
       <button onClick={onUpload}>Upload</button>
 
-      {!!product && (
+      {!!response && (
         <div>
-          <div>{product.name}</div>
-          <img
-            src={`/api/v1/product/product-photo/${product._id}?size=200`}
-            alt=""
-          />
+          <div>{response.name}</div>
+          <img src={response.avatar} alt="" />
         </div>
       )}
-    </div>
+    </>
   );
 };
