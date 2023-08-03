@@ -1,6 +1,7 @@
 import axios from "axios";
-import { isNil } from "lodash";
+import { isNil, isNull } from "lodash";
 import { ChangeEventHandler, useState } from "react";
+import { useAuth } from "./AuthProvider";
 
 const convertToBase64 = (file: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -17,11 +18,17 @@ const convertToBase64 = (file: Blob): Promise<string> => {
 };
 
 export const Avatar = () => {
+  const { auth } = useAuth();
+
   const [response, setResponse] = useState<Record<
-    "name" | "avatar",
+    "alias" | "avatar",
     string
   > | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
+
+  if (isNull(auth)) return null;
+
+  const { id } = auth;
 
   const onChange: ChangeEventHandler<HTMLInputElement> = async (event) => {
     if (isNil(event.target.files)) return;
@@ -35,11 +42,11 @@ export const Avatar = () => {
 
     axios
       .post(`/api/v1/profile/create`, {
-        name: `Foo ${Date.now()}`,
+        id,
         avatar,
       })
       .then(({ data }) => {
-        setResponse(data.product);
+        setResponse(data.profile);
       })
       .catch((error) => {
         console.log(error);
@@ -63,7 +70,7 @@ export const Avatar = () => {
 
       {!!response && (
         <div>
-          <div>{response.name}</div>
+          <div>{response.alias ?? "Anonymous"}</div>
           <img src={response.avatar} alt="" />
         </div>
       )}

@@ -1,19 +1,22 @@
 import profileModel from "../models/profileModel.js";
+import { prisma } from "../prisma/index.js";
 
 export const createProfileController = async (req, res) => {
   try {
-    const { name, avatar } = req.body;
+    const { id, avatar } = req.body;
 
-    if (!name || !avatar) {
-      return res.status(500).send({ error: "Name and avatar are required" });
+    if (!id || !avatar) {
+      return res.status(500).send({ error: "ID and avatar are required" });
     }
 
-    const product = await profileModel.create({ ...req.body });
+    const profile = await prisma.profile.create({
+      data: { avatar, userId: id },
+    });
 
     res.status(200).send({
       success: true,
       message: "Profile created successfully",
-      product,
+      profile,
     });
   } catch (error) {
     console.error(error);

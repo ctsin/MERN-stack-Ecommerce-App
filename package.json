@@ -14,6 +14,7 @@
   "author": "Chris Xing",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.0.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "colors": "^1.4.0",
@@ -25,9 +26,11 @@
     "mongoose": "^7.3.2",
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
+    "prisma": "^5.0.0",
     "react-router-dom": "^6.14.1"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.2",
     "@types/lodash": "^4.14.195",
     "concurrently": "^8.2.0"
   }

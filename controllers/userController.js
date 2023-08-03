@@ -1,11 +1,11 @@
 import JWT from "jsonwebtoken";
 import { comparePassword, hashPassword } from "../helpers/authHelper.js";
 import userModel from "../models/userModel.js";
+import { prisma } from "../prisma/index.js";
 
 export const registerController = async (req, res) => {
   try {
     const { username, password } = req.body;
-
     if (!username) {
       return res.send({
         message: "Name is required",
@@ -17,7 +17,7 @@ export const registerController = async (req, res) => {
       });
     }
 
-    const existingUser = await userModel.findOne({ username });
+    const existingUser = await prisma.user.findFirst({ where: { username } });
     if (existingUser)
       return res
         .status(200)
@@ -25,10 +25,12 @@ export const registerController = async (req, res) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const user = await new userModel({
-      username,
-      password: hashedPassword,
-    }).save();
+    const user = await prisma.user.create({
+      data: {
+        username,
+        password: hashedPassword,
+      },
+    });
 
     res
       .status(200)
@@ -54,7 +56,7 @@ export const loginController = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({ username });
+    const user = await prisma.user.findFirst({ where: { username } });
     if (!user) {
       return res.status(404).send({
         success: false,
@@ -70,7 +72,7 @@ export const loginController = async (req, res) => {
       });
     }
 
-    const userPayload = { username: user.username, id: user._id };
+    const userPayload = { username: user.username, id: user.id };
 
     const token = JWT.sign(userPayload, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -109,7 +111,7 @@ export const resetController = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({ _id: id });
+    const user = await prisma.user.findFirst({ where: { id } });
 
     if (!user) {
       return res.status(404).send({
@@ -129,7 +131,10 @@ export const resetController = async (req, res) => {
 
     const hashedPassword = await hashPassword(newPassword);
 
-    await user.updateOne({ password: hashedPassword });
+    await prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
 
     return res.status(200).send({
       success: true,

@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     username: "",
     token: "",
   });
-  console.log("🚀 ~ AuthProvider ~ auth:", auth);
   axios.defaults.headers.common.Authorization = auth?.token ?? "";
 
   useEffect(() => {

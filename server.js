@@ -2,13 +2,10 @@ import express from "express";
 import "colors";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import connectDB from "./config/db.js";
 import authRouter from "./routes/authRoute.js";
 import profileRouter from "./routes/profileRoute.js";
 
 dotenv.config();
-
-connectDB();
 
 const app = express();
 

@@ -4,7 +4,7 @@ import {
   registerController,
   resetController,
   testController,
-} from "../controllers/authController.js";
+} from "../controllers/userController.js";
 import { isAdmin, requireSignIn } from "../middleware/authMiddleware.js";
 
 // what's the difference between router and app.get()
