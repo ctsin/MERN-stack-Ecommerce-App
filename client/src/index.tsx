@@ -5,6 +5,7 @@ import { AuthProvider } from "./AuthProvider";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
 import { Auth } from "./Auth";
+import { Post } from "./Post";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -14,6 +15,7 @@ root.render(
     <AuthProvider>
       <Auth />
       <RouterProvider router={router} />
+      <Post />
     </AuthProvider>
   </React.StrictMode>
 );
