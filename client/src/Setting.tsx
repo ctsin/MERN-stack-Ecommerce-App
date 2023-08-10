@@ -5,7 +5,7 @@ export const Setting = () => {
   return (
     <>
       <Reset />
-      <Avatar />
+      {/* <Avatar /> */}
     </>
   );
 };
