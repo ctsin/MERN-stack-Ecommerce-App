@@ -1,6 +1,5 @@
 import JWT from "jsonwebtoken";
 import { comparePassword, hashPassword } from "../helpers/authHelper.js";
-import userModel from "../models/userModel.js";
 import { prisma } from "../prisma/index.js";
 
 export const registerController = async (req, res) => {

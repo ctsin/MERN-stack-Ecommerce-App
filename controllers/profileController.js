@@ -1,4 +1,3 @@
-import profileModel from "../models/profileModel.js";
 import { prisma } from "../prisma/index.js";
 
 export const createProfileController = async (req, res) => {
