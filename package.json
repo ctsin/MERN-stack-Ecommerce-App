@@ -14,7 +14,7 @@
   "author": "Chris Xing",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^5.0.0",
+    "@prisma/client": "^5.1.1",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "colors": "^1.4.0",
