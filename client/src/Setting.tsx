@@ -1,11 +1,11 @@
-import { Avatar } from "./Avatar";
+import { Profile } from "./Profile";
 import { Reset } from "./Auth";
 
 export const Setting = () => {
   return (
     <>
       <Reset />
-      {/* <Avatar /> */}
+      <Profile />
     </>
   );
 };

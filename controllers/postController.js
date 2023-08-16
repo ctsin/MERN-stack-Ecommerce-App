@@ -1,7 +1,5 @@
 import { prisma } from "../prisma/index.js";
 
-
-
 export const createPostController = async (req, res) => {
   const { id: authorID, title, content, categoryIDs } = req.body;
 
