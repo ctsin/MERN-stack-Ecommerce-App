@@ -36,14 +36,14 @@ model Post {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   authorID    String     @db.ObjectId
-  author      User      @relation(fields: [authorID], references: [id])
+  author      User       @relation(fields: [authorID], references: [id])
   categoryIDs String[]   @db.ObjectId
   categories  Category[] @relation(fields: [categoryIDs], references: [id])
 }
 
 model Category {
   id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  label   String
+  label   String   @unique
   postIDs String[] @db.ObjectId
   posts   Post[]   @relation(fields: [postIDs], references: [id])
 }

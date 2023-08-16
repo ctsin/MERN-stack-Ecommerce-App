@@ -34,7 +34,7 @@ export const createPostController = async (req, res) => {
   }
 };
 
-export const updatePostController = async (req, res) => {
+export const removeCategoryController = async (req, res) => {
   const { postID, categoryID } = req.params;
 
   if (!postID || !categoryID) {
@@ -49,6 +49,41 @@ export const updatePostController = async (req, res) => {
       data: {
         categories: {
           disconnect: { id: categoryID },
+        },
+      },
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Post updated successfully",
+      post,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error });
+  }
+};
+
+export const addCategoryController = async (req, res) => {
+  const { postID, category } = req.params;
+
+  if (!postID || !category) {
+    return res
+      .status(500)
+      .send({ error: "The post and category ID are required" });
+  }
+
+  try {
+    const decoded = decodeURIComponent(category);
+
+    const post = await prisma.post.update({
+      where: { id: postID },
+      data: {
+        categories: {
+          connectOrCreate: {
+            where: { label: decoded },
+            create: { label: decoded },
+          },
         },
       },
     });

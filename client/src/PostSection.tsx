@@ -21,30 +21,44 @@ interface PostsQuery extends QueryBase {
 
 type Values = Pick<PostWithRelation, "title" | "content" | "categoryIDs">;
 
-const useUpdatePostCategory = () => {
+const useRemovePostCategory = () => {
   const { auth } = useAuth();
-  const [response, setResponse] = useState<PostQuery | null>(null);
 
-  const updatePostCategory = async (
-    postID: Post["id"],
-    categoryID: Category["id"]
-  ) => {
+  return async (postID: Post["id"], categoryID: Category["id"]) => {
     try {
       if (isNull(auth)) throw new Error("Invalid token");
 
       const { data } = await axios.patch<PostQuery>(
-        `/api/v1/posts/update/${postID}-${categoryID}`
+        `/api/v1/posts/remove/${postID}-${categoryID}`
       );
 
       if (!data.success) throw new Error(data.message);
 
-      setResponse(data);
+      return data;
     } catch (error) {
       console.error(error);
     }
   };
+};
 
-  return { response, updatePostCategory };
+const useAddPostCategory = () => {
+  const { auth } = useAuth();
+
+  return async (postID: Post["id"], category: Category["label"]) => {
+    try {
+      if (isNull(auth)) throw new Error("Invalid token");
+
+      const { data } = await axios.patch<PostQuery>(
+        `/api/v1/posts/add/${postID}-${category}`
+      );
+
+      if (!data.success) throw new Error(data.message);
+
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 };
 
 const useCreatePost = () => {
@@ -125,10 +139,15 @@ const useLatestPost = () => {
   return post;
 };
 
+interface InstantCategoryValues {
+  category: Category["id"];
+}
+
 const LatestOne = () => {
   const latest = useLatestPost();
 
-  const { updatePostCategory } = useUpdatePostCategory();
+  const removePostCategory = useRemovePostCategory();
+  const addPostCategory = useAddPostCategory();
 
   if (isNull(latest)) return <>Loading</>;
 
@@ -139,8 +158,17 @@ const LatestOne = () => {
     author: { username },
   } = latest;
 
-  const onCategoryChanged = (categoryID: Category["id"]) => () => {
-    updatePostCategory(postID, categoryID);
+  const onCategoryChanged = (categoryID: Category["id"]) => async () => {
+    await removePostCategory(postID, categoryID);
+  };
+
+  const initialValues: InstantCategoryValues = {
+    category: "",
+  };
+
+  const onSubmit = async ({ category }: InstantCategoryValues) => {
+    const encoded = encodeURIComponent(category);
+    await addPostCategory(postID, encoded);
   };
 
   return (
@@ -159,6 +187,12 @@ const LatestOne = () => {
             </button>
           </Fragment>
         ))}
+        <Formik initialValues={initialValues} onSubmit={onSubmit}>
+          <Form>
+            <Field name="category" placeholder="category" />
+            <button type="submit">Add</button>
+          </Form>
+        </Formik>
       </div>
     </h4>
   );
