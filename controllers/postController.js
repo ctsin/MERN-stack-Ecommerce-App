@@ -32,6 +32,34 @@ export const createPostController = async (req, res) => {
   }
 };
 
+export const deletePostController = async (req, res) => {
+  const { postID } = req.params;
+
+  if (!postID) {
+    return res.status(500).send({ error: "The post ID is required" });
+  }
+
+  try {
+    /**
+     * @description - category count presents valid category items only,
+     * even the removed category is still in the post table.
+     */
+    const categoryCount = await prisma.post.delete({
+      where: { id: postID },
+      select: { _count: { select: { categories: true } } },
+    });
+    console.info("🚀 ~ deletePostController ~ categoryCount:", categoryCount);
+
+    res.status(200).send({
+      success: true,
+      message: "Delete Category successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error });
+  }
+};
+
 export const removeCategoryController = async (req, res) => {
   const { postID, categoryID } = req.params;
 

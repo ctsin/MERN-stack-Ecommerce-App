@@ -48,16 +48,7 @@ export const deleteCategoryController = async (req, res) => {
   }
 
   try {
-    const disconnectAllPosts = prisma.category.update({
-      where: { id },
-      data: {
-        posts: { set: [] },
-      },
-    });
-
-    const deleteCategory = prisma.category.delete({ where: { id } });
-
-    await prisma.$transaction([disconnectAllPosts, deleteCategory]);
+    await prisma.category.delete({ where: { id } });
 
     res.status(200).send({
       success: true,

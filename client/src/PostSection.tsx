@@ -63,10 +63,9 @@ const useAddPostCategory = () => {
 
 const useCreatePost = () => {
   const { auth } = useAuth();
+  if (isNull(auth)) throw new Error("Invalid token");
 
   return async (post: Values) => {
-    if (isNull(auth)) throw new Error("Invalid token");
-
     try {
       const { id } = auth;
 
@@ -76,6 +75,23 @@ const useCreatePost = () => {
         ...post,
         id,
       });
+
+      if (!success) throw new Error(message);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+};
+
+const useDeletePost = () => {
+  const { auth } = useAuth();
+  if (isNull(auth)) throw new Error("Invalid token");
+
+  return async (postID: Post["id"]) => {
+    try {
+      const {
+        data: { success, message },
+      } = await axios.post<PostQuery>(`/api/v1/posts/delete/${postID}`);
 
       if (!success) throw new Error(message);
     } catch (error) {
@@ -203,9 +219,9 @@ interface SingleProps {
 }
 const Single = ({ post }: SingleProps) => {
   return (
-    <div>
+    <>
       {post.title} by {post.author?.username}
-    </div>
+    </>
   );
 };
 
@@ -232,13 +248,21 @@ const usePosts = () => {
 
 const List = () => {
   const posts = usePosts();
+  const deletePost = useDeletePost();
 
   if (isEmpty(posts)) return <p>There are no posts yet.</p>;
+
+  const onDelete = (postID: Post["id"]) => async () => {
+    await deletePost(postID);
+  };
 
   return (
     <>
       {posts.map((post) => (
-        <Single key={post.id} post={post} />
+        <div key={post.id}>
+          <Single post={post} />
+          <button onClick={onDelete(post.id)}>Delete</button>
+        </div>
       ))}
     </>
   );

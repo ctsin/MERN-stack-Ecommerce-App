@@ -1,5 +1,6 @@
 import { isNull } from "lodash";
 import { useAuth } from "./AuthProvider";
+import { SignOut } from "./Auth";
 
 export const Profile = () => {
   const { auth } = useAuth();
@@ -12,6 +13,7 @@ export const Profile = () => {
     <>
       <h4>Profile</h4>
       Signed in as {username}
+      <SignOut />
     </>
   );
 };

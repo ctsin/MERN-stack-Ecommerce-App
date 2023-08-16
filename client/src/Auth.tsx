@@ -62,8 +62,6 @@ export const SignIn = () => {
           <button type="submit">Sign In</button>
         </Form>
       </Formik>
-
-      <SignOut />
     </div>
   );
 };
