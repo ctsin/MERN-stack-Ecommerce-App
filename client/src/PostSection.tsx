@@ -2,13 +2,13 @@ import axios from "axios";
 import { Field, Form, Formik } from "formik";
 import { useAuth } from "./AuthProvider";
 import { isEmpty, isNull } from "lodash";
-import { ChangeEvent, useEffect, useState } from "react";
-import { Post, Prisma } from "@prisma/client";
+import { Fragment, useEffect, useState } from "react";
+import { Category, Post, Prisma } from "@prisma/client";
 import { QueryBase } from "./interface";
 import { useCategories } from "./CategorySession";
 
 const postWithRelation = Prisma.validator<Prisma.PostDefaultArgs>()({
-  include: { author: true, category: true },
+  include: { author: true, categories: { select: { label: true, id: true } } },
 });
 type PostWithRelation = Prisma.PostGetPayload<typeof postWithRelation>;
 type PostsWithRelation = PostWithRelation[];
@@ -19,13 +19,16 @@ interface PostsQuery extends QueryBase {
   posts: PostsWithRelation;
 }
 
-type Values = Pick<PostWithRelation, "title" | "content" | "categoryID">;
+type Values = Pick<PostWithRelation, "title" | "content" | "categoryIDs">;
 
 const useUpdatePostCategory = () => {
   const { auth } = useAuth();
   const [response, setResponse] = useState<PostQuery | null>(null);
 
-  const updatePostCategory = async (postID: string, categoryID: string) => {
+  const updatePostCategory = async (
+    postID: Post["id"],
+    categoryID: Category["id"]
+  ) => {
     try {
       if (isNull(auth)) throw new Error("Invalid token");
 
@@ -46,39 +49,39 @@ const useUpdatePostCategory = () => {
 
 const useCreatePost = () => {
   const { auth } = useAuth();
-  const [post, setPost] = useState<Post | null>(null);
 
-  const create = async (post: Values) => {
+  return async (post: Values) => {
+    if (isNull(auth)) throw new Error("Invalid token");
+
     try {
-      if (isNull(auth)) throw new Error("Invalid token");
-
       const { id } = auth;
-      const { data } = await axios.post<Post>("/api/v1/posts/create", {
+
+      const {
+        data: { success, message },
+      } = await axios.post<PostQuery>("/api/v1/posts/create", {
         ...post,
         id,
       });
 
-      setPost(data);
+      if (!success) throw new Error(message);
     } catch (error) {
       console.error(error);
     }
   };
-
-  return { post, create };
 };
 
 const initialValues: Values = {
   title: "",
   content: "",
-  categoryID: "",
+  categoryIDs: [],
 };
 
 const Create = () => {
   const categories = useCategories();
-  const { create } = useCreatePost();
+  const create = useCreatePost();
 
   const onSubmit = async (values: Values) => {
-    create(values);
+    await create(values);
   };
 
   return (
@@ -86,14 +89,15 @@ const Create = () => {
       <Form>
         <Field name="title" placeholder="title" />
         <Field name="content" placeholder="content" />
-        <Field name="categoryID" as="select">
-          <option value=""> = Empty = </option>
+        <div>
           {categories.map(({ id, label }) => (
-            <option key={id} value={id}>
+            <label key={id}>
+              <Field name="categoryIDs" type="checkbox" value={id} />
               {label}
-            </option>
+            </label>
           ))}
-        </Field>
+        </div>
+
         <button type="submit">Create</button>
       </Form>
     </Formik>
@@ -123,27 +127,39 @@ const useLatestPost = () => {
 
 const LatestOne = () => {
   const latest = useLatestPost();
-  const categories = useCategories();
 
   const { updatePostCategory } = useUpdatePostCategory();
 
   if (isNull(latest)) return <>Loading</>;
 
-  const onCategoryChanged = (event: ChangeEvent<HTMLSelectElement>) => {
-    updatePostCategory(latest.id, event.target.value);
+  const {
+    id: postID,
+    title,
+    categories,
+    author: { username },
+  } = latest;
+
+  const onCategoryChanged = (categoryID: Category["id"]) => () => {
+    updatePostCategory(postID, categoryID);
   };
 
   return (
     <h4>
-      {latest.title} by {latest.author?.username} in{" "}
-      <select onChange={onCategoryChanged} value={latest.category?.id}>
-        <option value=""> = Empty = </option>
+      {title} by {username}
+      <div>
         {categories.map(({ id, label }) => (
-          <option key={id} value={id}>
+          <Fragment key={id}>
             {label}
-          </option>
+            <button
+              name="categories"
+              id={`category-${id}`}
+              onClick={onCategoryChanged(id)}
+            >
+              &times;
+            </button>
+          </Fragment>
         ))}
-      </select>
+      </div>
     </h4>
   );
 };

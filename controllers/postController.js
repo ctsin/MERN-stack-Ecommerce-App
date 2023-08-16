@@ -3,7 +3,7 @@ import { prisma } from "../prisma/index.js";
 
 
 export const createPostController = async (req, res) => {
-  const { id: authorID, title, content, categoryID } = req.body;
+  const { id: authorID, title, content, categoryIDs } = req.body;
 
   if (!title) {
     return res.status(500).send({ error: "The post title is required" });
@@ -17,8 +17,8 @@ export const createPostController = async (req, res) => {
         author: {
           connect: { id: authorID },
         },
-        category: {
-          connect: { id: categoryID },
+        categories: {
+          connect: categoryIDs.map((id) => ({ id })),
         },
       },
     });
@@ -37,16 +37,18 @@ export const createPostController = async (req, res) => {
 export const updatePostController = async (req, res) => {
   const { postID, categoryID } = req.params;
 
-  if (!postID) {
-    return res.status(500).send({ error: "The post ID is required" });
+  if (!postID || !categoryID) {
+    return res
+      .status(500)
+      .send({ error: "The post and category ID are required" });
   }
 
   try {
     const post = await prisma.post.update({
       where: { id: postID },
       data: {
-        category: {
-          connect: { id: categoryID },
+        categories: {
+          disconnect: { id: categoryID },
         },
       },
     });
@@ -71,7 +73,7 @@ export const queryLatestController = async (req, res) => {
         title: true,
         content: true,
         author: true,
-        category: {
+        categories: {
           select: {
             id: true,
             label: true,

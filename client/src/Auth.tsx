@@ -56,12 +56,14 @@ export const SignIn = () => {
     <div>
       <h4>Sign In</h4>
       <Formik initialValues={initialValues} onSubmit={onSubmit}>
-        <Form>
+        <Form style={{ display: "inline-block" }}>
           <Field name="username" placeholder="username" />
           <Field name="password" placeholder="password" />
           <button type="submit">Sign In</button>
         </Form>
       </Formik>
+
+      <SignOut />
     </div>
   );
 };
@@ -84,7 +86,7 @@ export const SignOut = () => {
   };
 
   return (
-    <button style={{ margin: "22px 0" }} onClick={onClick}>
+    <button style={{ marginLeft: "22px" }} onClick={onClick}>
       Sign Out
     </button>
   );
@@ -138,7 +140,6 @@ export const Reset = () => {
 export const Auth = () => {
   return (
     <>
-      <SignOut />
       <SignUp />
       <SignIn />
     </>

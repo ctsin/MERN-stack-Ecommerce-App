@@ -30,21 +30,20 @@ model Profile {
 }
 
 model Post {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  title      String
-  content    String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  authorID   String    @db.ObjectId
-  //todo @relation(references: [id], onDelete: Cascade)
-  author     User?     @relation(fields: [authorID], references: [id])
-  categoryID String?    @db.ObjectId
-  category   Category? @relation(fields: [categoryID], references: [id])
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  content     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  authorID    String     @db.ObjectId
+  author      User      @relation(fields: [authorID], references: [id])
+  categoryIDs String[]   @db.ObjectId
+  categories  Category[] @relation(fields: [categoryIDs], references: [id])
 }
 
 model Category {
   id      String   @id @default(auto()) @map("_id") @db.ObjectId
   label   String
   postIDs String[] @db.ObjectId
-  posts   Post[]
+  posts   Post[]   @relation(fields: [postIDs], references: [id])
 }
